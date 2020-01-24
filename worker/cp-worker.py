@@ -142,21 +142,8 @@ def runCellProfiler(message):
     watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=metadataID,create_log_group=False)
     logger.addHandler(watchtowerlogger)		
 	
-    # Build and run CellProfiler command
-    cp2 = False
-    with open(os.path.join(replaceValues['DATA'],replaceValues['PL']), 'r') as openpipe:
-	for line in openpipe:
-		if 'DateRevision:2' in line: #comes from a CP2 pipeline
-			cp2 = True
-			cmdstem = 'cellprofiler -c -r -b '
-    if not cp2:
-	cmdstem = 'cellprofiler -c -r '
-    cpDone = localOut + '/cp.is.done'
-    if message['pipeline'][-3:]!='.h5':
-        cmd = cmdstem + '-p %(DATA)s/%(PL)s -i %(DATA)s/%(IN)s -o %(OUT)s -d ' + cpDone
-        cmd += ' --data-file=%(DATA)s/%(FL)s -g %(Metadata)s'
-    else:
-        cmd = cmdstem + '-p %(DATA)s/%(PL)s -o %(OUT)s -d ' + cpDone + ' --data-file=%(DATA)s/%(FL)s -g %(Metadata)s'
+    # Build and run FIJI command
+    ##TODO look this up
     cmd = cmd % replaceValues
     print('Running', cmd)
     logger.info(cmd)
@@ -165,6 +152,8 @@ def runCellProfiler(message):
     monitorAndLog(subp,logger)
    
     # Get the outputs and move them to S3
+	
+    ##TODO figure out how FIJI signals that it is done
     if os.path.isfile(cpDone):
         if next(open(cpDone))=='Complete\n':
             time.sleep(30)
