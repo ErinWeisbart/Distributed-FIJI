@@ -5,7 +5,7 @@
 # This wraps the cellprofiler docker registry
 #
 
-FROM cellprofiler/cellprofiler:3.1.5
+FROM fiji/fiji:fiji-openjdk-8
 
 # Install S3FS 
 
