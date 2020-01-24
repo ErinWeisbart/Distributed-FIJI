@@ -1,5 +1,5 @@
-user = cellprofiler
-project = distributed-cellprofiler
+user = bethcimini
+project = distributed-FIJI
 tag = latest
 
 .DEFAULT_GOAL: build
