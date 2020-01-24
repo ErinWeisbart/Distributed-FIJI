@@ -1,7 +1,7 @@
-# Distributed-CellProfiler
-Run encapsulated docker containers with CellProfiler in the Amazon Web Services infrastructure.
+# Distributed-FIJI
+Run encapsulated docker containers with FIJI in the Amazon Web Services infrastructure.
 
-This code is an example of how to use AWS distributed infrastructure for running CellProfiler.
+This code is an example of how to use AWS distributed infrastructure for running FIJI.
 The configuration of the AWS resources is done using fabric. The worker is written in Python 
 and is encapsulated in a docker container. There are four AWS components that are needed to run 
 distributed jobs:
