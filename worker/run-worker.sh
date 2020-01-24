@@ -29,7 +29,7 @@ python instance-monitor.py &
 
 # 5. RUN CP WORKERS
 for((k=0; k<$DOCKER_CORES; k++)); do
-    python cp-worker.py |& tee $k.out &
+    python fiji-worker.py |& tee $k.out &
     sleep $SECONDS_TO_START
 done
 wait
