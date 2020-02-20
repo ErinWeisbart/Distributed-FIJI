@@ -49,7 +49,8 @@ RUN \
 
 # SETUP NEW ENTRYPOINT
 
-WORKDIR /opt/fiji
+RUN mkdir -p /home/ubuntu/
+WORKDIR /home/ubuntu
 COPY fiji-worker.py .
 COPY instance-monitor.py .
 COPY run-worker.sh .
