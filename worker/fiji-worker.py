@@ -86,41 +86,6 @@ def runCellProfiler(message):
 	
 	
     # Prepare paths and parameters
-    if type(message['Metadata'])==dict: #support for cellprofiler --print-groups output
-	if  message['output_structure']=='':
-		watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=str(message['Metadata'].values()),create_log_group=False)
-    		logger.addHandler(watchtowerlogger)
-		printandlog('You must specify an output structure when passing Metadata as dictionaries',logger)
-		logger.removeHandler(watchtowerlogger)
-		return 'INPUT_PROBLEM'
-	else:
-		metadataID = message['output_structure']
-		metadataForCall = ''
-		for eachMetadata in message['Metadata'].keys():
-			if eachMetadata not in metadataID:
-				watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=str(message['Metadata'].values()),create_log_group=False)
-    				logger.addHandler(watchtowerlogger)
-				printandlog('Your specified output structure does not match the Metadata passed',logger)
-			else:
-				metadataID = string.replace(metadataID,eachMetadata,message['Metadata'][eachMetadata])
-				metadataForCall+=eachMetadata+'='+message['Metadata'][eachMetadata]+','
-		message['Metadata']=metadataForCall[:-1]
-    elif 'output_structure' in message.keys():
-	    if message['output_structure']!='': #support for explicit output structuring
-		watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=message['Metadata'],create_log_group=False)
-		logger.addHandler(watchtowerlogger)
-		metadataID = message['output_structure']
-		for eachMetadata in message['Metadata'].split(','):
-			if eachMetadata.split('=')[0] not in metadataID:
-				printandlog('Your specified output structure does not match the Metadata passed',logger)
-			else:
-				metadataID = string.replace(metadataID,eachMetadata.split('=')[0],eachMetadata.split('=')[1])
-		printandlog('metadataID ='+metadataID, logger)
-	    else: #backwards compatability with 1.0.0 and/or no desire to structure output
-    		metadataID = '-'.join([x.split('=')[1] for x in message['Metadata'].split(',')]) # Strip equal signs from the metadata
-    else: #backwards compatability with 1.0.0 and/or no desire to structure output
-    	metadataID = '-'.join([x.split('=')[1] for x in message['Metadata'].split(',')]) # Strip equal signs from the metadata
-
     localOut = LOCAL_OUTPUT + '/%(MetadataID)s' % {'MetadataID': metadataID}
     remoteOut= os.path.join(message['output'],metadataID)
     replaceValues = {'PL':message['pipeline'], 'OUT':localOut, 'FL':message['data_file'],
@@ -144,6 +109,7 @@ def runCellProfiler(message):
 	
     # Build and run FIJI command
     ##TODO look this up
+    cmd = '/opt/fiji/FIJI.app --ij2 --headless --console --run /opt/fiji/plugins/'+PLUGIN_NAME + METADATA
     cmd = cmd % replaceValues
     print('Running', cmd)
     logger.info(cmd)
