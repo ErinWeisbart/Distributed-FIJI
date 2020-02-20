@@ -1,8 +1,8 @@
 #
-#                                 - [ BROAD'16 ] -
+#                                 - [ BROAD'20 ] -
 #
 # A docker instance for accessing AWS resources
-# This wraps the cellprofiler docker registry
+# This wraps the fiji docker registry
 #
 
 FROM fiji/fiji:fiji-openjdk-8
@@ -51,7 +51,7 @@ RUN \
 
 RUN mkdir -p /home/ubuntu/
 WORKDIR /home/ubuntu
-COPY cp-worker.py .
+COPY fiji-worker.py .
 COPY instance-monitor.py .
 COPY run-worker.sh .
 RUN chmod 755 run-worker.sh
