@@ -71,10 +71,10 @@ def printandlog(text,logger):
     logger.info(text)
 
 #################################
-# RUN CELLPROFILER PROCESS
+# RUN FIJI
 #################################
 
-def runCellProfiler(message):
+def runFIJI(message):
     #List the directories in the bucket- this prevents a strange s3fs error
     rootlist=os.listdir(DATA_ROOT)
     for eachSubDir in rootlist:
@@ -86,6 +86,8 @@ def runCellProfiler(message):
     logger = logging.getLogger(__name__)
 
 	
+    # Read the metadata string
+
 	
     # Prepare paths and parameters
     localOut = LOCAL_OUTPUT + '/%(MetadataID)s' % {'MetadataID': metadataID}
@@ -120,45 +122,40 @@ def runCellProfiler(message):
     monitorAndLog(subp,logger)
    
     # Get the outputs and move them to S3
-	
-    ##TODO figure out how FIJI signals that it is done
-    if os.path.isfile(cpDone):
-        if next(open(cpDone))=='Complete\n':
-            time.sleep(30)
-	    mvtries=0
-	    while mvtries <3:
-	    	try:
-            		printandlog('Move attempt #'+str(mvtries+1),logger)
-			cmd = 'aws s3 mv ' + localOut + ' s3://' + AWS_BUCKET + '/' + remoteOut + ' --recursive' 
-            		subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
-           		out,err = subp.communicate()
-            		printandlog('== OUT \n'+out, logger)
-            		if err == '':
-				break
-			else:
-				printandlog('== ERR \n'+err,logger)
-				mvtries+=1
-		except:
-			printandlog('Move failed',logger)
+    
+    # Figure out how many output files there were 
+    print('Checking output folder size')
+    cmd = "find "+localOut+" -type f | wc -l
+    logger.info 
+    subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+    out,err = subp.communicate()
+    if len(out)>=int(EXPECTED_NUMBER_FILES):
+        mvtries=0
+        while mvtries <3:
+	    try:
+		printandlog('Move attempt #'+str(mvtries+1),logger)
+		cmd = 'aws s3 mv ' + localOut + ' s3://' + AWS_BUCKET + '/' + remoteOut + ' --recursive' 
+		subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+		out,err = subp.communicate()
+		printandlog('== OUT \n'+out, logger)
+		if err == '':
+			break
+		else:
 			printandlog('== ERR \n'+err,logger)
-			time.sleep(30)
 			mvtries+=1
-	    if mvtries<3:
-		printandlog('SUCCESS',logger)
-		logger.removeHandler(watchtowerlogger)
-		return 'SUCCESS'
-            else:
-                printandlog('OUTPUT PROBLEM. Giving up on '+metadataID,logger)
-		logger.removeHandler(watchtowerlogger)
-		return 'OUTPUT_PROBLEM'
-        else:
-            printandlog('CP PROBLEM: Done file reports failure',logger)
+	    except:
+		printandlog('Move failed',logger)
+		printandlog('== ERR \n'+err,logger)
+		time.sleep(30)
+		mvtries+=1
+        if mvtries<3:
+	    printandlog('SUCCESS',logger)
 	    logger.removeHandler(watchtowerlogger)
-            return 'CP_PROBLEM'
+	    return 'SUCCESS'
     else:
-        printandlog('CP PROBLEM: Done file does not exist.',logger)
+	printandlog('OUTPUT PROBLEM. Giving up on '+metadataID,logger)
 	logger.removeHandler(watchtowerlogger)
-        return 'CP_PROBLEM'
+	return 'OUTPUT_PROBLEM'
     
 
 #################################
@@ -171,7 +168,7 @@ def main():
 	while True:
 		msg, handle = queue.readMessage()
 		if msg is not None:
-			result = runCellProfiler(msg)
+			result = runFIJI(msg)
 			if result == 'SUCCESS':
 				print('Batch completed successfully.')
 				queue.deleteMessage(handle)
