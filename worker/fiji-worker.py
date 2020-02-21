@@ -99,12 +99,13 @@ def runFIJI(message):
     remoteOut = message['output_file_location']
 
     # Start loggging now that we have a job we care about
+    metadataID = stringify_metadata_dict(message['Metadata'])
     watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=metadataID,create_log_group=False)
     logger.addHandler(watchtowerlogger)		
 	
     # Build and run FIJI command
-    cmd = '/opt/fiji/FIJI.app/ImageJ-linux64 --ij2 --headless --console --run "/opt/fiji/plugins/'+SCRIPT_NAME+'"' 
-    cmd += stringify_metadata_dict(message['shared_metadata']) + ', ' + stringify_metadata_dict(message['Metadata'])
+    cmd = '../../opt/fiji/Fiji.app/ImageJ-linux64 --ij2 --headless --console --run "../../opt/fiji/Fiji.app/plugins/'+SCRIPT_NAME+'" "' 
+    cmd += stringify_metadata_dict(message['shared_metadata']) + ', ' + metadataID+ '"'
     print('Running', cmd)
     logger.info(cmd)
     
