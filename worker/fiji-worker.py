@@ -97,20 +97,7 @@ def runFIJI(message):
 	
     # Prepare paths and parameters
     localOut = LOCAL_OUTPUT
-    remoteOut= message['output']
-    replaceValues = {'OUT':localOut, 'FL':message['data_file'],
-			'DATA': DATA_ROOT, 'Metadata': message['Metadata'], 'IN': message['input'], 
-			'MetadataID':metadataID }
-    # See if this is a message you've already handled, if you've so chosen
-    if CHECK_IF_DONE_BOOL.upper() == 'TRUE':
-        try:
-		s3client=boto3.client('s3')
-		bucketlist=s3client.list_objects(Bucket=AWS_BUCKET,Prefix=remoteOut+'/')
-		objectsizelist = [i for i in objectsizelist if i >= MIN_FILE_SIZE_BYTES]
-		if len(objectsizelist)>=int(EXPECTED_NUMBER_FILES):
-		    return 'SUCCESS'
-	except KeyError: #Returned if that folder does not exist
-		pass
+    remoteOut = message['output_file_location']
 
     # Start loggging now that we have a job we care about
     watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=metadataID,create_log_group=False)
@@ -133,7 +120,7 @@ def runFIJI(message):
     logger.info 
     subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
     out,err = subp.communicate()
-    if len(out)>=int(EXPECTED_NUMBER_FILES):
+    if int(out)>=int(EXPECTED_NUMBER_FILES):
         mvtries=0
         while mvtries <3:
 	    try:
