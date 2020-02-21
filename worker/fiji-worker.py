@@ -109,7 +109,7 @@ def runCellProfiler(message):
 	
     # Build and run FIJI command
     ##TODO look this up
-    cmd = '/opt/fiji/FIJI.app --ij2 --headless --console --run /opt/fiji/plugins/'+PLUGIN_NAME + METADATA
+    cmd = '/opt/fiji/FIJI.app/ImageJ-linux64 --ij2 --headless --console --run "/opt/fiji/plugins/'+PLUGIN_NAME + METADATA
     cmd = cmd % replaceValues
     print('Running', cmd)
     logger.info(cmd)
