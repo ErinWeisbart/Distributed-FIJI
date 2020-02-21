@@ -50,7 +50,7 @@ TASK_DEFINITION = {
 	    ],
             "name": APP_NAME,
             "image": DOCKERHUB_TAG,
-            "cpu": CPU_SHARES,
+            "cpu": 1024,
             "memory": MEMORY,
             "essential": True,
 	    "privileged": True,
@@ -132,10 +132,6 @@ def generate_task_definition():
 	    "value": AWS_BUCKET
 	},
 	{
-	    "name": "DOCKER_CORES",
-	    "value": str(DOCKER_CORES)
-	},
-	{
 	    "name": "LOG_GROUP_NAME",
 	    "value": LOG_GROUP_NAME
 	},
@@ -150,10 +146,6 @@ def generate_task_definition():
 	{
 	    "name": "ECS_CLUSTER",
 	    "value": ECS_CLUSTER
-	},
-	{
-	    "name": "SECONDS_TO_START",
-	    "value": str(SECONDS_TO_START)
 	},
 	{
 	    "name": "MIN_FILE_SIZE_BYTES",
