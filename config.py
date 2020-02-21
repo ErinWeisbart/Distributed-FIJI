@@ -19,6 +19,7 @@ EBS_VOL_SIZE = 30                       # In GB.  Minimum allowed is 22.  Docker
 
 # DOCKER INSTANCE RUNNING ENVIRONMENT:
 MEMORY = 4096                           # Memory assigned to the docker container in MB
+SCRIPT_DOWNLOAD_URL = 'https://some/url/with/a/script.y'
 
 # SQS QUEUE INFORMATION:
 SQS_QUEUE_NAME = APP_NAME + 'Queue'
