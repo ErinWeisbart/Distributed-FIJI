@@ -220,7 +220,7 @@ def startCluster():
     s3client=boto3.client('s3')
     ecsConfigFile=generateECSconfig(ECS_CLUSTER,APP_NAME,AWS_BUCKET,s3client)
     spotfleetConfig=loadConfig(sys.argv[2])
-    userData=generateUserData(ecsConfigFile,DOCKER_BASE_SIZE)
+    userData=generateUserData(ecsConfigFile,int(EBS_VOL_SIZE)-2)
     spotfleetConfig['LaunchSpecifications'][0]["UserData"]=userData
     spotfleetConfig['LaunchSpecifications'][0]['BlockDeviceMappings'][1]['Ebs']["VolumeSize"]= EBS_VOL_SIZE
 
@@ -305,8 +305,10 @@ def monitor():
 	#This is slooooooow, which is why we don't just do it at the end
         curtime=datetime.datetime.now().strftime('%H%M')
         if curtime[-2:]=='00':
-            killdeadAlarms(fleetId,monitorapp)
-	#Once every 10 minutes, check if all jobs are in process, and if so scale the spot fleet size to match
+	    if curtime[:2]!='00':	
+                killdeadAlarms(fleetId,monitorapp)
+	#Once every 10 minutes (but not on the hour, becasue this chokes at midnight, 
+	#check if all jobs are in process, and if so scale the spot fleet size to match
 	#the number of jobs still in process WITHOUT force terminating them.
 	#This can help keep costs down if, for example, you start up 100+ machines to run a large job, and
 	#1-10 jobs with errors are keeping it rattling around for hours.
