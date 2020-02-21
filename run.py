@@ -195,7 +195,7 @@ def submitJob():
 	queue = JobQueue()
 	print('Scheduling tasks')
 	for batch in jobInfo["groups"]:
-		templateMessage["Metadata"] = batch["Metadata"]
+		templateMessage["Metadata"] = batch
 		queue.scheduleBatch(templateMessage)
 	print('Job submitted. Check your queue')
 
