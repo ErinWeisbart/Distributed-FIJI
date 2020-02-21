@@ -22,6 +22,8 @@ AWS_BUCKET = os.environ['AWS_BUCKET']
 LOG_GROUP_NAME= os.environ['LOG_GROUP_NAME']
 CHECK_IF_DONE_BOOL= os.environ['CHECK_IF_DONE_BOOL']
 EXPECTED_NUMBER_FILES= os.environ['EXPECTED_NUMBER_FILES']
+SCRIPT_DOWNLOAD_URL = os.environ['SCRIPT_DOWNLOAD_URL']
+SCRIPT_NAME = os.path.split(SCRIPT_DOWNLOAD_URL)[1]
 
 #################################
 # CLASS TO HANDLE THE SQS QUEUE
@@ -96,10 +98,9 @@ def runCellProfiler(message):
         try:
 		s3client=boto3.client('s3')
 		bucketlist=s3client.list_objects(Bucket=AWS_BUCKET,Prefix=remoteOut+'/')
-		objectsizelist=[k['Size'] for k in bucketlist['Contents']]
+		objectsizelist = [i for i in objectsizelist if i >= MIN_FILE_SIZE_BYTES]
 		if len(objectsizelist)>=int(EXPECTED_NUMBER_FILES):
-		    if 0 not in objectsizelist:
-			return 'SUCCESS'
+		    return 'SUCCESS'
 	except KeyError: #Returned if that folder does not exist
 		pass
 
@@ -109,7 +110,8 @@ def runCellProfiler(message):
 	
     # Build and run FIJI command
     ##TODO look this up
-    cmd = '/opt/fiji/FIJI.app/ImageJ-linux64 --ij2 --headless --console --run "/opt/fiji/plugins/'+PLUGIN_NAME + METADATA
+    cmd = '/opt/fiji/FIJI.app/ImageJ-linux64 --ij2 --headless --console --run "/opt/fiji/plugins/'+SCRIPT_NAME+'"' 
+    cmd += METADATA
     cmd = cmd % replaceValues
     print('Running', cmd)
     logger.info(cmd)
