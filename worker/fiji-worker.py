@@ -70,6 +70,12 @@ def printandlog(text,logger):
     print(text)
     logger.info(text)
 
+def stringify_metadata_dict(mdict):
+    met_string = ""
+    for eachmeta in mdict.keys():
+        met_string+=eachmeta+"='"+mdict[eachmeta]+"', "
+    return met_string[:-2]
+
 #################################
 # RUN FIJI
 #################################
@@ -90,9 +96,9 @@ def runFIJI(message):
 
 	
     # Prepare paths and parameters
-    localOut = LOCAL_OUTPUT + '/%(MetadataID)s' % {'MetadataID': metadataID}
-    remoteOut= os.path.join(message['output'],metadataID)
-    replaceValues = {'PL':message['pipeline'], 'OUT':localOut, 'FL':message['data_file'],
+    localOut = LOCAL_OUTPUT
+    remoteOut= message['output']
+    replaceValues = {'OUT':localOut, 'FL':message['data_file'],
 			'DATA': DATA_ROOT, 'Metadata': message['Metadata'], 'IN': message['input'], 
 			'MetadataID':metadataID }
     # See if this is a message you've already handled, if you've so chosen
@@ -111,10 +117,8 @@ def runFIJI(message):
     logger.addHandler(watchtowerlogger)		
 	
     # Build and run FIJI command
-    ##TODO look this up
     cmd = '/opt/fiji/FIJI.app/ImageJ-linux64 --ij2 --headless --console --run "/opt/fiji/plugins/'+SCRIPT_NAME+'"' 
-    cmd += METADATA
-    cmd = cmd % replaceValues
+    cmd += stringify_metadata_dict(message['shared_metadata']) + ', ' + stringify_metadata_dict(message['Metadata'])
     print('Running', cmd)
     logger.info(cmd)
     
