@@ -1,5 +1,5 @@
 user = bethcimini
-project = distributed-FIJI
+project = distributed-fiji
 tag = latest
 
 .DEFAULT_GOAL: build
