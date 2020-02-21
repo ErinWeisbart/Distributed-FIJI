@@ -36,6 +36,9 @@ RUN make install
 
 # Install AWS CLI
 
+RUN apt-get -y upgrade python2.7
+RUN apt-get -y install python-pip
+
 RUN \
   pip install awscli 
 
