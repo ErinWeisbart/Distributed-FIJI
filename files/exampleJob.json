@@ -2,11 +2,14 @@
   "_comment1": "Paths in this file are relative to the root of your S3 bucket",
   "input_file_location": "projects/input/",
   "output_file_location": "projects/output/",
+  "_comment2a": "The line below allows you to tell DF if any of the metadata values specified in your groups should mean files",
+  "_comment2b": "end up in different subfolders.  Set to [] if none, otherwise set in order.",
+  "output_subfolder_metadata_key": ["Plate"],
   "shared_metadata": {"image_size":"1024","rows":"2","columns":"2"},
-  "_comment2": "The following groups are tasks, and each will be run in parallel",
+  "_comment3": "The following groups are tasks, and each will be run in parallel",
   "groups": [
-    {"Well": "A1"},
-    {"Well": "A2"}
+    {"Well": "A1", "Plate":"Plate_1"},
+    {"Well": "A2", "Plate":"Plate_1"}
   ]
 }
 
