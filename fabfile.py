@@ -150,6 +150,10 @@ def generate_task_definition():
 	{
 	    "name": "MIN_FILE_SIZE_BYTES",
 	    "value": str(MIN_FILE_SIZE_BYTES)
+	},
+	{
+	    "name": "SCRIPT_DOWNLOAD_URL",
+	    "value": SCRIPT_DOWNLOAD_URL
 	}
     ]
     return task_definition
