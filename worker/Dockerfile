@@ -9,9 +9,9 @@ FROM fiji/fiji:fiji-openjdk-8
 
 # Install S3FS 
 
-RUN apt-get -y update           && \
-    apt-get -y upgrade          && \
-    apt-get -y install 		\
+RUN sudo apt-get -y update           && \
+    sudo apt-get -y upgrade          && \
+    sudo apt-get -y install 		\
 	automake 		\
 	autotools-dev 		\
 	g++ 			\
