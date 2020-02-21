@@ -20,7 +20,6 @@ LOCAL_OUTPUT = '/home/ubuntu/local_output'
 QUEUE_URL = os.environ['SQS_QUEUE_URL']
 AWS_BUCKET = os.environ['AWS_BUCKET']
 LOG_GROUP_NAME= os.environ['LOG_GROUP_NAME']
-CHECK_IF_DONE_BOOL= os.environ['CHECK_IF_DONE_BOOL']
 EXPECTED_NUMBER_FILES= os.environ['EXPECTED_NUMBER_FILES']
 SCRIPT_DOWNLOAD_URL = os.environ['SCRIPT_DOWNLOAD_URL']
 SCRIPT_NAME = os.path.split(SCRIPT_DOWNLOAD_URL)[1]
@@ -116,7 +115,7 @@ def runFIJI(message):
     
     # Figure out how many output files there were 
     print('Checking output folder size')
-    cmd = "find "+localOut+" -type f | wc -l
+    cmd = "find "+localOut+" -type f | wc -l"
     logger.info 
     subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
     out,err = subp.communicate()
