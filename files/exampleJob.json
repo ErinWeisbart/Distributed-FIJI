@@ -1,14 +1,12 @@
 {
-  "_comment1": "Paths in this file are relative to the root of your S3 bucket",
-  "input_file_location": "projects/input/",
+  "_comment1": "Path of the output_file_location is relative to the root of your S3 bucket",
   "output_file_location": "projects/output/",
-  "_comment2a": "The line below allows you to tell DF if any of the metadata values specified in your groups should mean files",
-  "_comment2b": "end up in different subfolders.  Set to [] if none, otherwise set in order.",
-  "shared_metadata": {"image_size":"1024","rows":"2","columns":"2"},
+  "_comment2a": "If the location of input data is on your bucket and is passed to the script, make sure",
+  "_comment2b": "you pass a file location starting with /home/ubuntu/bucket",
+  "shared_metadata": {"input_file_location":"/home/ubuntu/bucket/projects/input","image_size":"1024","rows":"2","columns":"2"},
   "_comment3": "The following groups are tasks, and each will be run in parallel",
   "groups": [
     {"Well": "A1", "Plate":"Plate_1"},
     {"Well": "A2", "Plate":"Plate_1"}
   ]
 }
-

@@ -185,7 +185,6 @@ def submitJob():
 	# Step 1: Read the job configuration file
 	jobInfo = loadConfig(sys.argv[2])
 	templateMessage = {'Metadata': '',
-		'input_file_location': jobInfo["input_file_location"],
 		'output_file_location': jobInfo["output_file_location"],
 		'shared_metadata': jobInfo["shared_metadata"]
 	}
