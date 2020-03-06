@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import subprocess
-import sys 
+import sys
 import time
 import watchtower
 import string
@@ -16,7 +16,6 @@ import string
 #################################
 
 DATA_ROOT = '/home/ubuntu/bucket'
-LOCAL_OUTPUT = '/home/ubuntu/local_output'
 QUEUE_URL = os.environ['SQS_QUEUE_URL']
 AWS_BUCKET = os.environ['AWS_BUCKET']
 LOG_GROUP_NAME= os.environ['LOG_GROUP_NAME']
@@ -33,7 +32,7 @@ class JobQueue():
 	def __init__(self, queueURL):
 		self.client = boto3.client('sqs')
 		self.queueURL = queueURL
-	
+
 	def readMessage(self):
 		response = self.client.receive_message(QueueUrl=self.queueURL, WaitTimeSeconds=20)
 		if 'Messages' in response.keys():
@@ -63,7 +62,7 @@ def monitorAndLog(process,logger):
             break
         if output:
             print(output.strip())
-            logger.info(output)  
+            logger.info(output)
 
 def printandlog(text,logger):
     print(text)
@@ -82,72 +81,69 @@ def stringify_metadata_dict(mdict):
 def runFIJI(message):
     #List the directories in the bucket- this prevents a strange s3fs error
     rootlist=os.listdir(DATA_ROOT)
-    for eachSubDir in rootlist:
-	subDirName=os.path.join(DATA_ROOT,eachSubDir)
-	if os.path.isdir(subDirName):
-		trashvar=os.system('ls '+subDirName)
 
     # Configure the logs
     logger = logging.getLogger(__name__)
 
-	
+
     # Read the metadata string
 
-	
+
     # Prepare paths and parameters
-    localOut = LOCAL_OUTPUT
+    localOut = 'output'
     remoteOut = message['output_file_location']
 
     # Start loggging now that we have a job we care about
     metadataID = stringify_metadata_dict(message['Metadata'])
-    watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=metadataID,create_log_group=False)
-    logger.addHandler(watchtowerlogger)		
-	
+    metadata_for_log_name=metadataID.replace('*','.')
+    watchtowerlogger=watchtower.CloudWatchLogHandler(log_group=LOG_GROUP_NAME, stream_name=metadata_for_log_name,create_log_group=False)
+    logger.addHandler(watchtowerlogger)
+
     # Build and run FIJI command
-    cmd = '../../opt/fiji/Fiji.app/ImageJ-linux64 --ij2 --headless --console --run "../../opt/fiji/Fiji.app/plugins/'+SCRIPT_NAME+'" "' 
-    cmd += stringify_metadata_dict(message['shared_metadata']) + ', ' + metadataID+ '"'
+    cmd = ["Fiji.app/ImageJ-linux64","--ij2", "--headless", "--console", "--run",os.path.join("Fiji.app/plugins",SCRIPT_NAME)]
+    cmd.append(stringify_metadata_dict(message['shared_metadata']) + ', ' + metadataID)
     print('Running', cmd)
     logger.info(cmd)
-    
-    subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    subp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     monitorAndLog(subp,logger)
-   
+
     # Get the outputs and move them to S3
-    
-    # Figure out how many output files there were 
+
+    # Figure out how many output files there were - thanks https://stackoverflow.com/a/29769297
     print('Checking output folder size')
-    cmd = "find "+localOut+" -type f | wc -l"
-    logger.info 
-    subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
-    out,err = subp.communicate()
-    if int(out)>=int(EXPECTED_NUMBER_FILES):
+    filenum = 0
+    for _, _, filenames in os.walk(localOut):
+            filenum += len(filenames)
+    print(localOut,filenum)
+    if filenum>=int(EXPECTED_NUMBER_FILES):
         mvtries=0
         while mvtries <3:
-	    try:
-		printandlog('Move attempt #'+str(mvtries+1),logger)
-		cmd = 'aws s3 mv ' + localOut + ' s3://' + AWS_BUCKET + '/' + remoteOut + ' --recursive' 
-		subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
-		out,err = subp.communicate()
-		printandlog('== OUT \n'+out, logger)
-		if err == '':
-			break
-		else:
-			printandlog('== ERR \n'+err,logger)
-			mvtries+=1
-	    except:
-		printandlog('Move failed',logger)
-		printandlog('== ERR \n'+err,logger)
-		time.sleep(30)
-		mvtries+=1
+            try:
+                printandlog('Move attempt #'+str(mvtries+1),logger)
+                cmd = 'aws s3 mv ' + localOut + ' s3://' + AWS_BUCKET + '/' + remoteOut + ' --recursive'
+                subp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out,err = subp.communicate()
+                printandlog('== OUT \n'+out, logger)
+                if err == '':
+                    break
+                else:
+                    printandlog('== ERR \n'+err,logger)
+                    mvtries+=1
+            except:
+                printandlog('Move failed',logger)
+                printandlog('== ERR \n'+err,logger)
+                time.sleep(30)
+                mvtries+=1
         if mvtries<3:
-	    printandlog('SUCCESS',logger)
-	    logger.removeHandler(watchtowerlogger)
-	    return 'SUCCESS'
+            printandlog('SUCCESS',logger)
+            logger.removeHandler(watchtowerlogger)
+            return 'SUCCESS'
     else:
-	printandlog('OUTPUT PROBLEM. Giving up on '+metadataID,logger)
-	logger.removeHandler(watchtowerlogger)
-	return 'OUTPUT_PROBLEM'
-    
+        printandlog('OUTPUT PROBLEM. Only '+str(filenum)+' files detected. Giving up on '+metadataID,logger)
+        logger.removeHandler(watchtowerlogger)
+        return 'OUTPUT_PROBLEM'
+
 
 #################################
 # MAIN WORKER LOOP
@@ -179,4 +175,3 @@ if __name__ == '__main__':
 	print('Worker started')
 	main()
 	print('Worker finished')
-

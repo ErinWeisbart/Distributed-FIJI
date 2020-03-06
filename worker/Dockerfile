@@ -9,7 +9,7 @@ FROM fiji/fiji:fiji-openjdk-8
 
 USER root
 
-# Install S3FS 
+# Install S3FS
 
 RUN apt-get -y update           && \
     apt-get -y upgrade          && \
@@ -40,7 +40,7 @@ RUN apt-get -y upgrade python2.7
 RUN apt-get -y install python-pip
 
 RUN \
-  pip install awscli 
+  pip install awscli
 
 # Install boto3
 
@@ -54,8 +54,7 @@ RUN \
 
 # SETUP NEW ENTRYPOINT
 
-RUN mkdir -p /home/ubuntu/
-WORKDIR /home/ubuntu
+WORKDIR /opt/fiji
 COPY fiji-worker.py .
 COPY instance-monitor.py .
 COPY run-worker.sh .
@@ -63,4 +62,3 @@ RUN chmod 755 run-worker.sh
 
 ENTRYPOINT ["./run-worker.sh"]
 CMD [""]
-

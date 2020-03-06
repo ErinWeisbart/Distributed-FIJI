@@ -32,4 +32,3 @@ python instance-monitor.py &
 
 # 5. RUN FIJI WORKER
 python fiji-worker.py |& tee $k.out 
-
